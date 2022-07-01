@@ -15,7 +15,7 @@ fun main() {
             val messageOutputRoutine = launch { outputMessages() }
             val userInputRoutine = launch { inputMessages() }
 
-            userInputRoutine.join()
+            userInputRoutine.join() // Wait for completion; either "exit" or error
             messageOutputRoutine.cancelAndJoin()
         }
     }
