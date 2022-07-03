@@ -12,8 +12,20 @@ fun main() {
     val client = HttpClient {
         install(WebSockets)
     }
+    var userId = -1
     println("- Welcome to use this application! -")
     runBlocking {
+        client.webSocket(method = HttpMethod.Get, host = "127.0.0.1", port = 8080, path = "/") {
+            for (message in incoming) {
+                when (message) {
+                    is Frame.Text -> {
+                        userId = message.readText().toInt()
+                        break
+                    }
+                    else -> continue
+                }
+            }
+        }
         while (true) {
             println("- Now is in command mode! -")
             println("- To start communicating, please input your command like: ${cmdList.joinToString(", ")}! -")
@@ -23,6 +35,7 @@ fun main() {
                 when (cmd) {
                     "chat" -> {
                         client.webSocket(method = HttpMethod.Get, host = "127.0.0.1", port = 8080, path = "/chat") {
+                            send("$userId")
                             val messageOutputRoutine = launch { outputMessages() }
                             val userInputRoutine = launch { inputMessages() }
 
@@ -32,6 +45,7 @@ fun main() {
                     }
                     "whisper" -> {
                         client.webSocket(method = HttpMethod.Get, host = "127.0.0.1", port = 8080, path = "/whisper") {
+                            send("$userId")
                             val messageOutputRoutine = launch { outputMessages() }
                             val userInputRoutine = launch { inputMessages() }
 
