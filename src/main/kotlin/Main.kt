@@ -100,14 +100,18 @@ suspend fun DefaultClientWebSocketSession.inputMessages() {
         if (message.equals("exit", true)) return
         if (message.startsWith(".ban")) {
             val blockWord = message.substringAfter(".ban").trim()
-            ban += blockWord
-            println("sys: $blockWord is banned")
+            if (blockWord !in ban) {
+                ban += blockWord
+                println("sys: $blockWord is banned")
+            } else println("sys: $blockWord is already banned")
             continue
         }
         if (message.startsWith(".unban")) {
             val blockWord = message.substringAfter(".unban").trim()
-            ban -= blockWord
-            println("sys: $blockWord is unbanned")
+            if (blockWord in ban) {
+                ban -= blockWord
+                println("sys: $blockWord is unbanned")
+            } else println("sys: $blockWord is not banned")
             continue
         }
         try {
