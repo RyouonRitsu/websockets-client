@@ -6,6 +6,9 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.util.Collections
+
+val ban: MutableSet<String> = Collections.synchronizedSet(LinkedHashSet())
 
 fun main() {
     val cmdList = listOf("chat", "whisper", "exit")
@@ -66,7 +69,21 @@ suspend fun DefaultClientWebSocketSession.outputMessages() {
     try {
         for (message in incoming) {
             when (message) {
-                is Frame.Text -> println(message.readText())
+                is Frame.Text -> {
+                    var find = false
+                    ban.filter { it != ".world" }.forEach {
+                        if (message.readText().contains(it)) {
+                            find = true
+                            return@forEach
+                        }
+                    }
+                    if (find) continue
+                    if (".world" in ban && message.readText().startsWith("[") && !message.readText()
+                            .startsWith("[system]")
+                    )
+                        continue
+                    println(message.readText())
+                }
                 else -> continue
             }
         }
@@ -81,6 +98,18 @@ suspend fun DefaultClientWebSocketSession.inputMessages() {
     while (true) {
         val message = readLine() ?: ""
         if (message.equals("exit", true)) return
+        if (message.startsWith(".ban")) {
+            val blockWord = message.substringAfter(".ban").trim()
+            ban += blockWord
+            println("sys: $blockWord is banned")
+            continue
+        }
+        if (message.startsWith(".unban")) {
+            val blockWord = message.substringAfter(".unban").trim()
+            ban -= blockWord
+            println("sys: $blockWord is unbanned")
+            continue
+        }
         try {
             send(message)
         } catch (e: Exception) {
