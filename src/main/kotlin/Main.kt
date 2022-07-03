@@ -6,7 +6,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import java.util.Collections
+import java.util.*
 
 val ban: MutableSet<String> = Collections.synchronizedSet(LinkedHashSet())
 
